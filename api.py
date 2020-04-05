@@ -138,7 +138,7 @@ class OnlineScoreRequest(object):
         self.birthday = birthday
         self.gender = gender
 
-        if not ((phone and email) or (first_name and last_name) or (gender and birthday) or (gender == 0 and birthday)):
+        if not ((phone and email) or (first_name and last_name) or (gender is not None and birthday)):
             raise AttributeError('Must be at least one pair: phone+email or first+last_name or gender+birthday')
 
 
