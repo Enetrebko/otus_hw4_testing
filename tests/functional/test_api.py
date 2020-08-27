@@ -1,60 +1,10 @@
 import hashlib
 import datetime
-import functools
 import unittest
 from store import Store
 import api
 from unittest import mock
-from time import sleep
-
-
-def cases(cases):
-    def decorator(f):
-        @functools.wraps(f)
-        def wrapper(*args):
-            for c in cases:
-                new_args = args + (c if isinstance(c, tuple) else (c,))
-                f(*new_args)
-        return wrapper
-    return decorator
-
-
-class TestFields(unittest.TestCase):
-    @cases([3, {3}, [3]])
-    def test_charfield_invalid(self, value):
-        with self.assertRaises(ValueError):
-            api.CharField().validate(value)
-
-    @cases(['5'])
-    def test_charfield_valid(self, value):
-        self.assertEqual(api.CharField().validate(value), None)
-
-    @cases([3, [3]])
-    def test_argumentsfield_invalid(self, value):
-        with self.assertRaises(ValueError):
-            api.ArgumentsField().validate(value)
-
-    @cases([{'key': '3'}])
-    def test_argumentsfield_valid(self, value):
-        self.assertEqual(api.ArgumentsField().validate(value), None)
-
-    @cases(['a', 5])
-    def test_emailfield_invalid(self, value):
-        with self.assertRaises(ValueError):
-            api.EmailField().validate(value)
-
-    @cases(['@'])
-    def test_emailfield_valid(self, value):
-        self.assertEqual(api.EmailField().validate(value), None)
-
-    @cases(['a', 5])
-    def test_phonefield_invalid(self, value):
-        with self.assertRaises(ValueError):
-            api.PhoneField().validate(value)
-
-    @cases(['71111111111', 71111111111])
-    def test_phonefield_valid(self, value):
-        self.assertEqual(api.PhoneField().validate(value), None)
+from tests.testutils import cases
 
 
 class TestSuite(unittest.TestCase):
@@ -202,28 +152,3 @@ class TestSuite(unittest.TestCase):
         self.assertEqual(api.OK, code, arguments)
         score = response.get("score")
         self.assertEqual(score, 42)
-
-
-class TestStore(unittest.TestCase):
-    def setUp(self):
-        self.store = Store()
-
-    def test_get(self):
-        self.store.set('key', 5)
-        value = self.store.get('key')
-        self.assertEqual(value, b'5')
-
-    def test_cache_get(self):
-        self.store.cache_set('key', 5)
-        value = self.store.cache_get('key')
-        self.assertEqual(value, b'5')
-
-    def test_store_time(self):
-        self.store.cache_set('key', 5, store_time=3)
-        sleep(3)
-        value = self.store.cache_get('key')
-        self.assertEqual(value, None)
-
-
-if __name__ == "__main__":
-    unittest.main()
