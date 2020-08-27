@@ -11,31 +11,7 @@ from optparse import OptionParser
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from store import Store
 import re
-
-SALT = "Otus"
-ADMIN_LOGIN = "admin"
-ADMIN_SALT = "42"
-OK = 200
-BAD_REQUEST = 400
-FORBIDDEN = 403
-NOT_FOUND = 404
-INVALID_REQUEST = 422
-INTERNAL_ERROR = 500
-ERRORS = {
-    BAD_REQUEST: "Bad Request",
-    FORBIDDEN: "Forbidden",
-    NOT_FOUND: "Not Found",
-    INVALID_REQUEST: "Invalid Request",
-    INTERNAL_ERROR: "Internal Server Error",
-}
-UNKNOWN = 0
-MALE = 1
-FEMALE = 2
-GENDERS = {
-    UNKNOWN: "unknown",
-    MALE: "male",
-    FEMALE: "female",
-}
+from settings.api_config import *
 
 
 class AbstractField(object):
@@ -90,12 +66,12 @@ class PhoneField(AbstractField):
 class DateField(AbstractField):
     def validate(self, value):
         if value:
-            datetime.strptime(value, '%d.%m.%Y')
+            datetime.strptime(str(value), '%d.%m.%Y')
 
 
 class BirthDayField(AbstractField):
     def validate(self, value):
-        if value and not (datetime.now() - datetime.strptime(value, '%d.%m.%Y')).days <= 365 * 70:
+        if value and not (datetime.now() - datetime.strptime(str(value), '%d.%m.%Y')).days <= 365 * 70:
             raise ValueError("Must be <=70 years old: %s" % value)
 
 
