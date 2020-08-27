@@ -13,7 +13,10 @@ def get_score(store, phone, email, birthday=None, gender=None, first_name=None, 
     key = "uid:" + hashlib.md5("".join(str(key) for key in key_parts).encode('utf8')).hexdigest()
     # try get from cache,
     # fallback to heavy calculation in case of cache miss
-    value = store.cache_get(key)
+    try:
+        value = store.cache_get(key)
+    except ConnectionError:
+        value = None
     score = json.loads(value) if value else 0
     if score:
         return score
@@ -26,8 +29,12 @@ def get_score(store, phone, email, birthday=None, gender=None, first_name=None, 
     if first_name and last_name:
         score += 0.5
     # cache for 60 minutes
-    store.cache_set(key, score, 60 * 60)
-    return score
+    try:
+        store.cache_set(key, score, 60 * 60)
+    except ConnectionError:
+        pass
+    finally:
+        return score
 
 
 def get_interests(store, cid):
