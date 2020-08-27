@@ -2,6 +2,7 @@ import redis
 import logging
 from functools import wraps
 from time import sleep
+from settings.redis_config import *
 
 
 def reconnect(func):
@@ -12,17 +13,20 @@ def reconnect(func):
                 value = func(*args, **kwargs)
             except Exception as e:
                 logging.info(f'{e}, attempt_no: {i}')
-                sleep(1)
+                sleep(RETRY_DELAY)
             else:
                 return value
-        raise redis.exceptions.ConnectionError
+        raise ConnectionError
     return wrapper
 
 
 class Store:
-    def __init__(self):
-        self.store = redis.Redis(socket_timeout=3, socket_connect_timeout=3)
-        self.attempts = 5
+    def __init__(self, host=HOST, port=PORT):
+        self.store = redis.Redis(host=host,
+                                 port=port,
+                                 socket_timeout=SOCKET_TIMEOUT,
+                                 socket_connect_timeout=SOCKET_CONNECT_TIMEOUT)
+        self.attempts = ATTEMPTS
 
     @reconnect
     def cache_get(self, key):
@@ -43,6 +47,7 @@ class Store:
     @reconnect
     def get(self, key):
         return self.store.get(key)
+
 
     @reconnect
     def set(self, key, value):
